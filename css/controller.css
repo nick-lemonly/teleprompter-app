@@ -274,20 +274,11 @@
   .ctl-top { flex-direction: row; align-items: center; gap: 12px; }
   .ctl-titlebar { flex: 1; min-height: 44px; min-width: 0; }
   .ctl-status { flex: 0 1 auto; max-width: 45%; }
-  /* Mirror and transport side by side; the speed slider runs along the bottom, away
-     from Play/Pause, so a slider drag can't land on it. */
-  .ctl-main {
-    display: grid;
-    grid-template-columns: 1fr 280px;
-    grid-template-rows: minmax(0, 1fr) auto;
-    gap: 6px 12px;
-  }
-  .ctl-view { grid-column: 1; grid-row: 1; min-height: 0; }
-  .ctl-controls { display: contents; }
-  .transport { grid-column: 2; grid-row: 1; align-self: center; }
-  .speed { grid-column: 1 / -1; grid-row: 2; flex-direction: row; align-items: center; gap: 12px; }
-  .speed-row { flex: 1; }
-  .speed-val { min-width: 92px; text-align: right; }
+  /* Mirror on the left; on the right, transport at the top and the speed slider pinned
+     to the bottom, so a slider drag can't land on Play/Pause. */
+  .ctl-main { flex-direction: row; gap: 12px; }
+  .ctl-view { min-height: 0; }
+  .ctl-controls { width: 280px; justify-content: space-between; gap: 12px; overflow: auto; }
   .tbtn { min-height: 52px; }
   .tbtn.play { min-height: 64px; }
 }
