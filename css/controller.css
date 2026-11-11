@@ -163,14 +163,29 @@
   color: #000;
   font-size: 1.6rem;
 }
-.tbtn.play:hover:not(:disabled) { background: #5ad6d3; border-color: #5ad6d3; }
+.tbtn.play:hover:not(:disabled) { background: #29a9a6; border-color: #29a9a6; }
 .tbtn.play.playing { background: var(--yellow); border-color: var(--yellow); }
-.tbtn.play.playing:hover:not(:disabled) { background: #f9e266; border-color: #f9e266; }
+.tbtn.play.playing:hover:not(:disabled) { background: #d9bc1c; border-color: #d9bc1c; }
 .tbtn.play:disabled { opacity: 0.35; }
 
 .speed { display: flex; flex-direction: column; align-items: stretch; gap: 0; padding: 0 2px; }
-.speed-row { display: flex; align-items: center; gap: 10px; }
-.speed-icon { flex: none; display: inline-flex; color: var(--muted); }
+.speed-row { display: flex; align-items: center; gap: 6px; }
+.speed-icon {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.speed-icon:hover { color: var(--text); background: var(--raised); }
+.speed-icon:active { color: var(--teal); }
+.speed-icon:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
 .speed-val { text-align: center; color: var(--muted); font-size: 0.8rem; }
 .speed-range {
   flex: 1;
@@ -259,9 +274,20 @@
   .ctl-top { flex-direction: row; align-items: center; gap: 12px; }
   .ctl-titlebar { flex: 1; min-height: 44px; min-width: 0; }
   .ctl-status { flex: 0 1 auto; max-width: 45%; }
-  .ctl-main { flex-direction: row; gap: 10px; }
-  .ctl-view { min-height: 0; }
-  .ctl-controls { width: 300px; overflow: auto; gap: 8px; }
-  .tbtn { min-height: 48px; }
-  .tbtn.play { min-height: 52px; }
+  /* Mirror and transport side by side; the speed slider runs along the bottom, away
+     from Play/Pause, so a slider drag can't land on it. */
+  .ctl-main {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 6px 12px;
+  }
+  .ctl-view { grid-column: 1; grid-row: 1; min-height: 0; }
+  .ctl-controls { display: contents; }
+  .transport { grid-column: 2; grid-row: 1; align-self: center; }
+  .speed { grid-column: 1 / -1; grid-row: 2; flex-direction: row; align-items: center; gap: 12px; }
+  .speed-row { flex: 1; }
+  .speed-val { min-width: 92px; text-align: right; }
+  .tbtn { min-height: 52px; }
+  .tbtn.play { min-height: 64px; }
 }

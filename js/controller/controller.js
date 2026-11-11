@@ -68,9 +68,9 @@ export function mountController(root, ctx) {
   const speedVal = h('div.speed-val', {}, `${DEFAULT_SPEED_LPM} lines/min`);
   const speedRow = h('div.speed', {},
     h('div.speed-row', {},
-      h('span.speed-icon', { title: 'Slower', html: icon('turtle', 24) }),
+      h('button.speed-icon', { 'aria-label': 'Slower (−5)', title: 'Slower (−5)', onclick: () => cmd.bumpSpeed(-RANGES.speed.bigStep), html: icon('turtle', 24) }),
       speed,
-      h('span.speed-icon', { title: 'Faster', html: icon('rabbit', 24) })),
+      h('button.speed-icon', { 'aria-label': 'Faster (+5)', title: 'Faster (+5)', onclick: () => cmd.bumpSpeed(RANGES.speed.bigStep), html: icon('rabbit', 24) })),
     speedVal);
 
   // Advanced controls: in the ••• panel on phones, inline beside the mirror on wide screens.
@@ -441,12 +441,20 @@ export function mountController(root, ctx) {
   function updateDevices(rig, presence) {
     const displayId = rig.display?.deviceId;
     const entries = Object.entries(presence || {});
-    entries.sort(([a], [b]) => (a === displayId ? -1 : b === displayId ? 1 : 0));
+    // Display first, then this device, then the rest.
+    const rank = (id) => (id === displayId ? 0 : id === deviceId ? 1 : 2);
+    entries.sort(([a], [b]) => rank(a) - rank(b));
+    const seen = new Map();
     devicesEl.replaceChildren(
-      ...entries.map(([id, p]) =>
-        h('span.device' + (id === displayId ? '.is-display' : '') + (id === deviceId ? '.is-me' : ''), {
+      ...entries.map(([id, p]) => {
+        const base = p.name || 'Device';
+        const n = (seen.get(base) || 0) + 1; // two devices with the same name: "Nick's Mac", "Nick's Mac 2"
+        seen.set(base, n);
+        const label = `${base}${n > 1 ? ' ' + n : ''}${id === deviceId ? ' (you)' : ''}`;
+        return h('span.device' + (id === displayId ? '.is-display' : '') + (id === deviceId ? '.is-me' : ''), {
           title: `${p.role || ''}${p.email ? ' · ' + p.email : ''}`,
-        }, p.name || 'Device')),
+        }, label);
+      }),
     );
   }
 

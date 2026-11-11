@@ -59,14 +59,30 @@
   line-height: 1;
 }
 .editor-toolbar.ql-snow button:hover { background: var(--raised); }
-.editor-toolbar.ql-snow .ql-stroke { stroke: #ddd; }
-.editor-toolbar.ql-snow .ql-fill { fill: #ddd; }
-.editor-toolbar.ql-snow button:hover .ql-stroke, .editor-toolbar.ql-snow button.ql-active .ql-stroke { stroke: var(--teal); }
-.editor-toolbar.ql-snow button:hover .ql-fill, .editor-toolbar.ql-snow button.ql-active .ql-fill { fill: var(--teal); }
-.editor-toolbar.ql-snow button.ql-active { background: var(--raised); color: var(--teal); }
+/* One hover/active color for every toolbar button. The .editor prefix outranks Quill's
+   own blue (#06c) rules, which load after this file. */
+.editor .editor-toolbar.ql-snow button { color: #ddd; }
+.editor .editor-toolbar.ql-snow .ql-stroke, .editor .editor-toolbar.ql-snow .ql-stroke-miter { stroke: #ddd; }
+.editor .editor-toolbar.ql-snow .ql-fill, .editor .editor-toolbar.ql-snow .ql-stroke.ql-fill { fill: #ddd; }
+.editor .editor-toolbar.ql-snow button:hover,
+.editor .editor-toolbar.ql-snow button:focus-visible,
+.editor .editor-toolbar.ql-snow button.ql-active { color: var(--teal); background: var(--raised); }
+.editor .editor-toolbar.ql-snow button:hover .ql-stroke,
+.editor .editor-toolbar.ql-snow button:hover .ql-stroke-miter,
+.editor .editor-toolbar.ql-snow button:focus-visible .ql-stroke,
+.editor .editor-toolbar.ql-snow button.ql-active .ql-stroke,
+.editor .editor-toolbar.ql-snow button.ql-active .ql-stroke-miter { stroke: var(--teal); }
+.editor .editor-toolbar.ql-snow button:hover .ql-fill,
+.editor .editor-toolbar.ql-snow button:focus-visible .ql-fill,
+.editor .editor-toolbar.ql-snow button.ql-active .ql-fill,
+.editor .editor-toolbar.ql-snow button:hover .ql-stroke.ql-fill,
+.editor .editor-toolbar.ql-snow button.ql-active .ql-stroke.ql-fill { fill: var(--teal); }
+/* Quill keeps focus on a clicked button; don't leave it looking "on". */
+.editor .editor-toolbar.ql-snow button:focus:not(:focus-visible):not(.ql-active):not(:hover) { color: #ddd; background: none; }
+.editor .editor-toolbar.ql-snow button:focus:not(:focus-visible):not(.ql-active):not(:hover) .ql-stroke { stroke: #ddd; }
+.editor .editor-toolbar.ql-snow button:focus:not(:focus-visible):not(.ql-active):not(:hover) .ql-fill { fill: #ddd; }
 .editor-toolbar.ql-snow .ql-undo, .editor-toolbar.ql-snow .ql-redo { display: inline-flex; align-items: center; justify-content: center; }
 .editor-toolbar.ql-snow .ql-undo .ic, .editor-toolbar.ql-snow .ql-redo .ic { width: 18px; height: 18px; }
-.editor-toolbar.ql-snow button:hover .ic { color: var(--teal); }
 
 .editor-scroll {
   flex: 1;
