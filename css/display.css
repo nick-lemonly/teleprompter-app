@@ -63,8 +63,8 @@ body.is-display { overflow: hidden; background: #000; }
 }
 .overlay-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
 .overlay-head strong { flex: 1; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.9rem; }
-.toggle-row { display: flex; align-items: center; gap: 12px; min-height: 48px; cursor: pointer; }
-.toggle-row input { width: 22px; height: 22px; accent-color: var(--teal); }
+.overlay-panel .switch-row { font-size: 0.95rem; }
+.overlay-panel .input { margin-bottom: 6px; }
 .overlay-actions, .notice-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
 .notice-box { text-align: center; }
 .notice-actions { justify-content: center; }

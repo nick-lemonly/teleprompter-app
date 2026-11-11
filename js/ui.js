@@ -2,6 +2,11 @@
 
 /** Tiny element builder: h('button.primary', { onclick }, 'Play') */
 export function h(spec, attrs = {}, ...children) {
+  // Attributes are optional: h('div', child, child) works too.
+  if (attrs instanceof Node || typeof attrs === 'string' || Array.isArray(attrs)) {
+    children.unshift(attrs);
+    attrs = {};
+  }
   const [tag, ...classes] = spec.split('.');
   const el = document.createElement(tag || 'div');
   if (classes.length) el.className = classes.join(' ');

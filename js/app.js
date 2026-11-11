@@ -5,6 +5,7 @@ import { startRig, setPresence, clearPresence } from './rig/state.js';
 import * as cmd from './rig/commands.js';
 import { getRole, setRole, isDesktop, getDeviceName, setDeviceName } from './device.js';
 import { h, confirmDialog, promptDialog, toast } from './ui.js';
+import { icon } from './icons.js';
 import { APP_VERSION, DEMO_ENABLED } from './config.js';
 import { startLibrary } from './library/store.js';
 import { mountLibrary } from './library/library.js';
@@ -197,9 +198,9 @@ function mountRolePicker() {
       h('h1', {}, 'Use this device as…'),
       h('div.role-buttons', {},
         h('button.role-btn', { onclick: () => choose('display') },
-          h('span.role-ico', {}, '🖥'), h('strong', {}, 'Display'), h('span.muted', {}, 'The iPad in the prompter rig')),
+          h('span.role-ico', { html: icon('monitor', 40) }), h('strong', {}, 'Display'), h('span.muted', {}, 'The iPad in the prompter rig')),
         h('button.role-btn', { onclick: () => choose('controller') },
-          h('span.role-ico', {}, '🎛'), h('strong', {}, 'Controller'), h('span.muted', {}, 'Drive the prompter from here'))),
+          h('span.role-ico', { html: icon('smartphone', 40) }), h('strong', {}, 'Controller'), h('span.muted', {}, 'Drive the prompter from here'))),
       h('p.muted.small', {}, 'You can change this later in the account menu.'),
       h('button.btn.ghost', { onclick: () => ctx.signOut() }, 'Sign out'))));
   document.title = 'Lemonly Prompter';
@@ -209,14 +210,18 @@ let menuEl = null;
 function closeAccountMenu() {
   menuEl?.remove();
   menuEl = null;
+  menuAnchor = null;
   document.removeEventListener('pointerdown', onDocDown, true);
 }
+let menuAnchor = null;
 function onDocDown(e) {
-  if (menuEl && !menuEl.contains(e.target)) closeAccountMenu();
+  if (menuEl && !menuEl.contains(e.target) && !menuAnchor?.contains(e.target)) closeAccountMenu();
 }
 
 function openAccountMenu(anchor) {
+  if (menuEl && menuAnchor === anchor) return closeAccountMenu(); // toggle
   closeAccountMenu();
+  menuAnchor = anchor;
   const role = getRole() || 'controller';
   const item = (label, fn, cls = '') => h('button.menu-item' + cls, {
     role: 'menuitem',

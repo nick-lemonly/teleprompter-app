@@ -39,12 +39,11 @@ export function mountController(root, ctx) {
   const stageHost = h('div.mirror-stage-host');
   const parts = createStage(stageHost);
   const frameEl = h('div.mirror-frame');
-  const caret = h('div.mirror-caret');
   const badge = h('div.mirror-badge.hidden');
   const emptyMsg = h('div.mirror-empty', {},
     h('p', {}, 'No script loaded'),
     h('button.btn.primary', { onclick: () => ctx.go('#/library') }, 'Choose a script'));
-  mirror.append(stageHost, frameEl, caret, badge, emptyMsg);
+  mirror.append(stageHost, frameEl, badge, emptyMsg);
   const editorMount = h('div.ctl-editor-mount');
   const editorHost = h('div.ctl-editor.hidden', {},
     h('div.edit-bar', {},
@@ -57,11 +56,10 @@ export function mountController(root, ctx) {
   const tbtn = (cls, iconName, text, title, onclick) =>
     h('button.tbtn' + cls, { 'aria-label': title, title, onclick },
       iconName ? h('span.tbtn-ico', { html: icon(iconName, 20) }) : null, text ? h('span', {}, text) : null);
-  const topBtn = tbtn('', 'skip-back', 'Top', 'To top (Home)', () => cmd.toTop());
   const backBtn = tbtn('', 'chevron-left', 'Back', 'Back a paragraph (←)', () => cmd.back());
   const playBtn = h('button.tbtn.play', { 'aria-label': 'Play', title: 'Play / pause (Space)', onclick: () => cmd.togglePlay() });
   const fwdBtn = tbtn('.fwd', 'chevron-right', 'Next', 'Forward a paragraph (→)', () => cmd.forward());
-  const transport = h('div.transport', {}, topBtn, backBtn, playBtn, fwdBtn);
+  const transport = h('div.transport', {}, backBtn, playBtn, fwdBtn);
 
   const speed = h('input.speed-range', {
     type: 'range', min: RANGES.speed.min, max: RANGES.speed.max, step: RANGES.speed.step,
@@ -120,6 +118,7 @@ export function mountController(root, ctx) {
   }
   function toggleMore() {
     if (morePanel.classList.contains('hidden')) {
+      morePanel.style.top = `${top.offsetTop + top.offsetHeight + 6}px`; // clear of the ••• button
       morePanel.classList.remove('hidden');
       moreBtn.classList.add('active');
       setTimeout(() => document.addEventListener('pointerdown', onOutside, true), 0);
@@ -273,12 +272,16 @@ export function mountController(root, ctx) {
 
   /** Scale the display-sized stage to fit the mirror box; frame the display's visible area. */
   function layoutMirror() {
-    const rect = mirror.getBoundingClientRect();
-    if (!rect.width || !rect.height) return;
-    let scale = rect.width / vp.w;
-    if (vp.h * scale * 1.06 > rect.height) scale = Math.min(scale, rect.height / (vp.h * 1.06));
-    const stageH = rect.height / scale;
-    const offsetX = (rect.width - vp.w * scale) / 2;
+    // Inner size (excludes the mirror's own border), with a small inset so the frame
+    // outline never touches the edges.
+    const cw = mirror.clientWidth;
+    const ch = mirror.clientHeight;
+    if (!cw || !ch) return;
+    const INSET = 8;
+    let scale = (cw - INSET * 2) / vp.w;
+    if (vp.h * scale + INSET * 2 > ch) scale = Math.min(scale, (ch - INSET * 2) / vp.h);
+    const stageH = ch / scale;
+    const offsetX = (cw - vp.w * scale) / 2;
     const frameTop = stageH >= vp.h ? (stageH - vp.h) / 2 : stageH * 0.4 - vp.h * REF_LINE_FRACTION;
     const refY = frameTop + vp.h * REF_LINE_FRACTION;
     geo = { scale, refY, stageH, offsetX };
@@ -287,8 +290,6 @@ export function mountController(root, ctx) {
     Object.assign(frameEl.style, {
       left: `${offsetX}px`, top: `${frameTop * scale}px`, width: `${vp.w * scale}px`, height: `${vp.h * scale}px`,
     });
-    caret.style.top = `${refY * scale}px`;
-    caret.style.left = `${offsetX}px`;
   }
 
   const ro = new ResizeObserver(() => relayoutLocal(settings));
@@ -371,7 +372,7 @@ export function mountController(root, ctx) {
 
   function tapToParagraph(e) {
     const rect = mirror.getBoundingClientRect();
-    const yStage = (e.clientY - rect.top) / geo.scale;
+    const yStage = (e.clientY - rect.top - mirror.clientTop) / geo.scale;
     const contentY = yStage - (geo.refY - lastLocalPos);
     if (contentY < 0 || contentY > localLayout.totalHeight) return;
     const i = blockIndexAt(contentY, localLayout.blockTops);
@@ -416,11 +417,11 @@ export function mountController(root, ctx) {
     const playing = pb.state === 'playing';
     if (playBtn.dataset.state !== (playing ? 'pause' : 'play')) {
       playBtn.dataset.state = playing ? 'pause' : 'play';
-      playBtn.innerHTML = icon(playing ? 'pause' : 'play', 34);
+      playBtn.innerHTML = icon(playing ? 'pause' : 'play', 34, { fill: true });
     }
     playBtn.classList.toggle('playing', playing);
     playBtn.setAttribute('aria-label', playing ? 'Pause' : 'Play');
-    for (const b of [topBtn, backBtn, fwdBtn]) b.disabled = playing || !scriptId;
+    for (const b of [backBtn, fwdBtn]) b.disabled = playing || !scriptId;
     playBtn.disabled = !scriptId;
     if (!speedDragging) {
       speed.value = pb.speedLpm || DEFAULT_SPEED_LPM;

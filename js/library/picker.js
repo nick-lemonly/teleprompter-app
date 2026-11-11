@@ -16,7 +16,7 @@ export function pickScript({ title = 'Choose a script' } = {}) {
     const crumbs = h('div.crumbs');
     const list = h('div.pick-list');
     const content = h('div.picker', {},
-      h('div.picker-head', {}, h('h2', {}, title), h('button.btn.icon', { 'aria-label': 'Close', onclick: () => modal.close() }, '✕')),
+      h('div.picker-head', {}, h('h2', {}, title), h('button.btn.icon.ghost', { 'aria-label': 'Close', onclick: () => modal.close(), html: icon('x') })),
       search, crumbs, list);
     const modal = openModal(content, {
       className: 'modal-tall',
@@ -72,7 +72,7 @@ export function pickFolder({ title = 'Move to…', movingFolderId = null, startI
     const list = h('div.pick-list');
     const moveBtn = h('button.btn.primary', { onclick: () => { result = { folderId }; modal.close(); } }, 'Move here');
     const content = h('div.picker', {},
-      h('div.picker-head', {}, h('h2', {}, title), h('button.btn.icon', { 'aria-label': 'Close', onclick: () => modal.close() }, '✕')),
+      h('div.picker-head', {}, h('h2', {}, title), h('button.btn.icon.ghost', { 'aria-label': 'Close', onclick: () => modal.close(), html: icon('x') })),
       crumbs, list,
       h('div.dialog-actions', {}, h('button.btn', { onclick: () => modal.close() }, 'Cancel'), moveBtn));
     const modal = openModal(content, { className: 'modal-tall', onClose: () => { unsub(); resolve(result); } });

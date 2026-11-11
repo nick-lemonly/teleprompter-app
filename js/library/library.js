@@ -39,8 +39,9 @@ export function mountLibrary(root, ctx, { folderId: initialFolder = null, trash 
     trash ? h('p.muted', {}, 'Items in the trash are deleted forever after 30 days.') : h('div.lib-tools', {},
       search,
       h('label.check', {}, searchTextBox, h('span', {}, 'Search script text too')),
-      sortSel,
-      h('button.btn.ghost.trash-link', { onclick: () => ctx.go('#/trash'), html: `${icon('trash-2', 18)}<span>Trash</span>` })),
+      h('div.sort-trash', {},
+        h('label.sort-wrap', {}, h('span.sort-label', {}, 'Sort'), sortSel),
+        h('button.btn.ghost.trash-link', { onclick: () => ctx.go('#/trash'), html: `${icon('trash-2', 18)}<span>Trash</span>` }))),
     trash ? null : crumbs,
   );
   const el = h('div.library', {}, head, list);
@@ -120,6 +121,17 @@ export function mountLibrary(root, ctx, { folderId: initialFolder = null, trash 
     }
   }
   async function trashIt(item) {
+    const isFolder = item.kind === 'folder';
+    const name = (isFolder ? item.name : item.title) || 'Untitled';
+    const ok = await confirmDialog({
+      title: `Delete “${name}”?`,
+      message: isFolder
+        ? 'The folder and everything in it move to the Trash. You can restore them for 30 days.'
+        : 'It moves to the Trash. You can restore it for 30 days.',
+      confirmLabel: 'Delete',
+      danger: true,
+    });
+    if (!ok) return;
     try {
       if (item.kind === 'folder') await store.trashFolder(item.id);
       else await store.trashScript(item.id);
@@ -190,7 +202,7 @@ export function mountLibrary(root, ctx, { folderId: initialFolder = null, trash 
           setRole('controller');
           ctx.go('#/controller'); // straight to the controls
         },
-        html: `${icon('play', 16)}<span class="load-text">Load on prompter</span>`,
+        html: `${icon('play', 16, { fill: true })}<span class="load-text">Load on prompter</span>`,
       }),
       menuButton([
         ['Edit', () => ctx.go(`#/edit/${s.id}`)],
@@ -260,16 +272,23 @@ export function mountLibrary(root, ctx, { folderId: initialFolder = null, trash 
 
 // ── Popover menu ────────────────────────────────────────────────────────────
 let openMenuEl = null;
+let openAnchor = null;
 function closeMenu() {
   openMenuEl?.remove();
   openMenuEl = null;
+  openAnchor?.classList.remove('active');
+  openAnchor = null;
   document.removeEventListener('pointerdown', onDocDown, true);
 }
 function onDocDown(e) {
-  if (openMenuEl && !openMenuEl.contains(e.target)) closeMenu();
+  // Presses on the menu's own ••• button are handled by its click (which toggles).
+  if (openMenuEl && !openMenuEl.contains(e.target) && !openAnchor?.contains(e.target)) closeMenu();
 }
 function openMenu(anchor, items) {
+  if (openAnchor === anchor) return closeMenu(); // second press on the same ••• closes it
   closeMenu();
+  openAnchor = anchor;
+  anchor.classList.add('active');
   const menu = h('div.popover-menu', { role: 'menu' },
     items.map(([label, fn, cls]) => h('button.menu-item' + (cls ? '.' + cls : ''), {
       role: 'menuitem',

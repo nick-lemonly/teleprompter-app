@@ -4,7 +4,9 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 8px 10px calc(10px + var(--safe-bottom));
+  /* Clear the iPhone status bar / Dynamic Island on top and the home indicator at the
+     bottom, so the speed slider never sits at the very edge of the screen. */
+  padding: calc(6px + var(--safe-top)) 12px max(20px, calc(10px + var(--safe-bottom)));
   gap: 8px;
 }
 
@@ -52,8 +54,7 @@
 .more-panel {
   position: absolute;
   z-index: 20;
-  top: calc(56px + var(--safe-top));
-  right: 10px;
+  right: 12px;
   width: min(360px, calc(100% - 20px));
   padding: 14px;
   background: var(--surface);
@@ -101,19 +102,9 @@
 .mirror-stage-host { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
 .mirror-frame {
   position: absolute;
-  border: 1.5px solid rgba(51, 200, 197, 0.75);
-  border-radius: 3px;
+  border: 2.5px solid rgba(51, 200, 197, 0.85);
+  border-radius: 4px;
   box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.55);
-  pointer-events: none;
-}
-.mirror-caret {
-  position: absolute;
-  width: 0;
-  height: 0;
-  border-left: 9px solid var(--teal);
-  border-top: 6px solid transparent;
-  border-bottom: 6px solid transparent;
-  transform: translate(2px, -6px);
   pointer-events: none;
 }
 .mirror-badge {
@@ -145,7 +136,7 @@
 
 /* Controls */
 .ctl-controls { flex: none; display: flex; flex-direction: column; gap: 10px; }
-.transport { display: grid; grid-template-columns: 1fr 1fr 1.6fr 1fr; gap: 8px; }
+.transport { display: grid; grid-template-columns: 1fr 1.5fr 1fr; gap: 10px; }
 .tbtn {
   display: inline-flex;
   align-items: center;
@@ -172,10 +163,12 @@
   color: #000;
   font-size: 1.6rem;
 }
+.tbtn.play:hover:not(:disabled) { background: #5ad6d3; border-color: #5ad6d3; }
 .tbtn.play.playing { background: var(--yellow); border-color: var(--yellow); }
+.tbtn.play.playing:hover:not(:disabled) { background: #f9e266; border-color: #f9e266; }
 .tbtn.play:disabled { opacity: 0.35; }
 
-.speed { display: flex; flex-direction: column; align-items: stretch; gap: 2px; }
+.speed { display: flex; flex-direction: column; align-items: stretch; gap: 0; padding: 0 2px; }
 .speed-row { display: flex; align-items: center; gap: 10px; }
 .speed-icon { flex: none; display: inline-flex; color: var(--muted); }
 .speed-val { text-align: center; color: var(--muted); font-size: 0.8rem; }
@@ -260,7 +253,7 @@
 /* Phones held sideways: mirror on the left, controls in a scrolling column on the right. */
 @media (max-height: 560px) and (orientation: landscape) and (max-width: 899px) {
   .controller {
-    padding: 4px max(10px, env(safe-area-inset-right)) 6px max(10px, env(safe-area-inset-left));
+    padding: calc(4px + var(--safe-top)) max(12px, env(safe-area-inset-right)) max(10px, var(--safe-bottom)) max(12px, env(safe-area-inset-left));
     gap: 4px;
   }
   .ctl-top { flex-direction: row; align-items: center; gap: 12px; }
@@ -271,5 +264,4 @@
   .ctl-controls { width: 300px; overflow: auto; gap: 8px; }
   .tbtn { min-height: 48px; }
   .tbtn.play { min-height: 52px; }
-  .more-panel { top: 50px; }
 }

@@ -65,8 +65,8 @@
 .editor-toolbar.ql-snow button:hover .ql-fill, .editor-toolbar.ql-snow button.ql-active .ql-fill { fill: var(--teal); }
 .editor-toolbar.ql-snow button.ql-active { background: var(--raised); color: var(--teal); }
 .editor-toolbar.ql-snow .ql-undo, .editor-toolbar.ql-snow .ql-redo { display: inline-flex; align-items: center; justify-content: center; }
-.editor-toolbar.ql-snow .ql-undo .icon, .editor-toolbar.ql-snow .ql-redo .icon { width: 18px; height: 18px; }
-.editor-toolbar.ql-snow button:hover .icon { color: var(--teal); }
+.editor-toolbar.ql-snow .ql-undo .ic, .editor-toolbar.ql-snow .ql-redo .ic { width: 18px; height: 18px; }
+.editor-toolbar.ql-snow button:hover .ic { color: var(--teal); }
 
 .editor-scroll {
   flex: 1;

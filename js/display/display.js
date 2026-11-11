@@ -13,6 +13,7 @@ import { serverNow, clockOffset } from '../clock.js';
 import { deviceId, getDeviceName, setDeviceName, getPref, setPref } from '../device.js';
 import { watchScript } from '../script-doc.js';
 import { attachShortcuts } from '../shortcuts.js';
+import { icon } from '../icons.js';
 import * as cmd from '../rig/commands.js';
 import { DEFAULT_SETTINGS, DEFAULT_SPEED_LPM, SYNC } from '../config.js';
 
@@ -324,13 +325,13 @@ export function mountDisplay(root, ctx) {
       h('div.overlay-head', {},
         h('img', { src: 'assets/lemonly-logo.svg', alt: '', class: 'logo-sm' }),
         h('strong', {}, 'Display settings'),
-        h('button.btn.icon', { 'aria-label': 'Close', onclick: () => hide() }, '✕'),
+        h('button.btn.icon.ghost', { 'aria-label': 'Close', onclick: () => hide(), html: icon('x') }),
       ),
       h('label.field-label', {}, 'Display name'),
       nameInput,
-      h('label.toggle-row', {}, flipV, h('span', {}, 'Flip upside-down')),
-      h('label.toggle-row', {}, flipH, h('span', {}, 'Flip left-right')),
-      h('label.toggle-row', {}, showDot, h('span', {}, 'Show connection dot')),
+      h('label.switch-row', {}, flipV, h('span.switch'), h('span', {}, 'Flip upside-down')),
+      h('label.switch-row', {}, flipH, h('span.switch'), h('span', {}, 'Flip left-right')),
+      h('label.switch-row', {}, showDot, h('span.switch'), h('span', {}, 'Show connection dot')),
       h('div.overlay-actions', {},
         h('button.btn', { onclick: () => ctx.switchRole() }, 'Switch role'),
         h('button.btn', { onclick: () => ctx.signOut() }, 'Sign out'),
