@@ -1,0 +1,14 @@
+{
+  "rules": {
+    "rig": {
+      ".read": "auth != null && auth.token.email_verified == true && auth.token.email.matches(/.*@(lemonly|clickrain)\\.com$/)",
+      ".write": "auth != null && auth.token.email_verified == true && auth.token.email.matches(/.*@(lemonly|clickrain)\\.com$/)"
+    },
+    "presence": {
+      ".read": "auth != null && auth.token.email_verified == true && auth.token.email.matches(/.*@(lemonly|clickrain)\\.com$/)",
+      "$deviceId": {
+        ".write": "auth != null && auth.token.email_verified == true && auth.token.email.matches(/.*@(lemonly|clickrain)\\.com$/)"
+      }
+    }
+  }
+}

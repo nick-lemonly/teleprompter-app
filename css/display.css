@@ -1,0 +1,70 @@
+/* Display: full-screen black, script in white, no chrome. */
+body.is-display { overflow: hidden; background: #000; }
+.view-display { position: fixed; inset: 0; }
+.display-root {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #000;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+.display-host { position: absolute; inset: 0; }
+.display-host .stage { position: absolute; left: 0; top: 0; }
+
+.display-idle {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+  padding: 24px;
+}
+.idle-name { font-size: 2rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+.idle-status { color: var(--muted); font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+.idle-status::before { content: ''; width: 12px; height: 12px; border-radius: 50%; background: var(--teal); }
+.display-idle.offline .idle-status::before { background: var(--coral); }
+
+.display-dot {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--teal);
+  opacity: 0.3;
+  pointer-events: none;
+}
+.display-dot.offline { background: var(--coral); opacity: 0.85; }
+
+.display-overlay, .display-notice {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.75);
+}
+.overlay-panel, .notice-box {
+  width: 100%;
+  max-width: 440px;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.overlay-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.overlay-head strong { flex: 1; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.9rem; }
+.toggle-row { display: flex; align-items: center; gap: 12px; min-height: 48px; cursor: pointer; }
+.toggle-row input { width: 22px; height: 22px; accent-color: var(--teal); }
+.overlay-actions, .notice-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+.notice-box { text-align: center; }
+.notice-actions { justify-content: center; }

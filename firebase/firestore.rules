@@ -1,0 +1,13 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+    // Signed in with a verified @lemonly.com or @clickrain.com Google account.
+    function isTeam() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email.matches('.*@(lemonly|clickrain)[.]com$');
+    }
+    match /folders/{id} { allow read, write: if isTeam(); }
+    match /scripts/{id} { allow read, write: if isTeam(); }
+  }
+}

@@ -1,0 +1,37 @@
+# ── Planning docs (private) ─────────────────────────
+spec.md
+spec-original.md
+firebase-setup.md
+
+# ── Claude / AI tooling ─────────────────────────────
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+.mcp.json
+
+# ── Local-only dev tools: simulator + dummy data ───
+dev/
+
+# ── Firebase CLI ────────────────────────────────────
+.firebase/
+.firebaserc
+firebase-debug.log
+firestore-debug.log
+database-debug.log
+ui-debug.log
+
+# ── Secrets / env (none expected, but just in case) ─
+.env
+.env.*
+
+# ── Dependencies / builds (if ever added) ───────────
+node_modules/
+dist/
+
+# ── OS and editor junk ──────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.log
