@@ -2,6 +2,7 @@
 // Positions are "content y at the reference line": 0 means the top of the first block
 // sits on the reference line.
 import { linePx } from './playback.js';
+import { REF_LINE_FRACTION } from '../config.js';
 
 /** Blocks = top-level paragraphs plus each top-level list item. */
 export function getBlocks(contentEl) {
@@ -27,14 +28,23 @@ function offsetTopWithin(el, container) {
   return y;
 }
 
+/**
+ * Lead-in: how far above the first line you can scroll (negative px). At minPos the
+ * first line sits one line above the bottom of the display, giving the talent lead time.
+ */
+export function leadInMinPos(viewportH, settings) {
+  return -Math.max(0, viewportH * (1 - REF_LINE_FRACTION) - 1.5 * linePx(settings));
+}
+
 /** Measure a rendered script. contentEl must be position: relative. */
-export function measureLayout(contentEl, settings) {
+export function measureLayout(contentEl, settings, viewportH) {
   const blocks = getBlocks(contentEl);
   const blockTops = blocks.map((b) => offsetTopWithin(b, contentEl));
   const totalHeight = contentEl.offsetHeight;
   const maxPos = Math.max(0, totalHeight - linePx(settings));
   const texts = blocks.map((b) => b.textContent.replace(/\s+/g, ' ').trim().slice(0, 160));
-  return { blockTops, totalHeight, maxPos, texts };
+  const minPos = Math.round(leadInMinPos(viewportH || 0, settings));
+  return { blockTops, totalHeight, maxPos, minPos, texts };
 }
 
 export function layoutHash({ scriptId, revision, fontSizePx, lineHeight, viewportW, viewportH }) {

@@ -4,6 +4,7 @@ import {
   onLibrary, childFolders, childScripts, folderPath, allScripts, allFolders, getFolder, canMoveFolder,
 } from './store.js';
 import { sortScripts, byName } from './sort.js';
+import { icon } from '../icons.js';
 
 /** Resolves to a script id, or null if cancelled. */
 export function pickScript({ title = 'Choose a script' } = {}) {
@@ -44,7 +45,7 @@ export function pickScript({ title = 'Choose a script' } = {}) {
       } else {
         if (folderId) {
           const parent = getFolder(folderId)?.parentId || null;
-          rows.push(h('button.pick-row.up', { onclick: () => { folderId = parent; render(); } }, h('span.ico', {}, '↩'), h('span', {}, 'Up a level')));
+          rows.push(h('button.pick-row.up', { onclick: () => { folderId = parent; render(); } }, h('span.ico', { html: icon('arrow-left', 18) }), h('span', {}, 'Up a level')));
         }
         for (const f of childFolders(folderId).sort(byName)) rows.push(folderRow(f, () => { folderId = f.id; render(); }));
         for (const s of sortScripts(childScripts(folderId), 'opened')) rows.push(scriptRow(s, () => choose(s.id)));
@@ -81,7 +82,7 @@ export function pickFolder({ title = 'Move to…', movingFolderId = null, startI
       const rows = [];
       if (folderId) {
         const parent = getFolder(folderId)?.parentId || null;
-        rows.push(h('button.pick-row.up', { onclick: () => { folderId = parent; render(); } }, h('span.ico', {}, '↩'), h('span', {}, 'Up a level')));
+        rows.push(h('button.pick-row.up', { onclick: () => { folderId = parent; render(); } }, h('span.ico', { html: icon('arrow-left', 18) }), h('span', {}, 'Up a level')));
       }
       for (const f of childFolders(folderId).sort(byName)) {
         const blocked = movingFolderId && !canMoveFolder(movingFolderId, f.id);
@@ -111,12 +112,12 @@ export function breadcrumbEls(folderId, go) {
 }
 
 function folderRow(f, onclick) {
-  return h('button.pick-row', { onclick }, h('span.ico', {}, '📁'), h('span.name', {}, f.name || 'Untitled folder'));
+  return h('button.pick-row', { onclick }, h('span.ico', { html: icon('folder', 20) }), h('span.name', {}, f.name || 'Untitled folder'));
 }
 
 function scriptRow(s, onclick, showPath = false) {
   const path = showPath && s.folderId ? folderPath(s.folderId).map((f) => f.name).join(' / ') : '';
   return h('button.pick-row', { onclick },
-    h('span.ico', {}, '📄'),
+    h('span.ico', { html: icon('file-text', 20) }),
     h('span.name', {}, s.title || 'Untitled', path ? h('span.path', {}, path) : null));
 }

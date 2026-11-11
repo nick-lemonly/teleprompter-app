@@ -27,7 +27,7 @@ export const DEFAULT_SETTINGS = {
 export const DEFAULT_SPEED_LPM = 20;
 
 export const RANGES = {
-  speed: { min: 5, max: 60, step: 1, bigStep: 5 },
+  speed: { min: 5, max: 100, step: 1, bigStep: 5 },
   fontSize: { min: 32, max: 160, step: 4 },
   lineHeight: { min: 1.0, max: 2.2, step: 0.1 },
 };

@@ -98,7 +98,7 @@ const ctx = {
   switchRole(role) {
     if (!role) return ctx.go('#/role');
     setRole(role);
-    ctx.go(role === 'display' ? '#/display' : '#/controller');
+    ctx.go(role === 'display' ? '#/display' : '#/library');
   },
   async signOut() {
     clearPresence();
@@ -107,11 +107,11 @@ const ctx = {
   refreshPresence,
 };
 
+// Home is the script library. Phones and tablets pick a role on first launch.
 function defaultRoute() {
   const role = getRole();
   if (role === 'display') return '#/display';
-  if (isDesktop()) return '#/library';
-  if (role === 'controller') return '#/controller';
+  if (isDesktop() || role === 'controller') return '#/library';
   return '#/role';
 }
 
@@ -134,7 +134,10 @@ function route() {
       break;
     case 'controller':
       if (getRole() !== 'controller') setRole('controller');
-      mountInShell('Prompter', 'controller', (main) => mountController(main, ctx));
+      // Full-screen: the controller has its own back arrow instead of the app header.
+      setView(h('div.shell.section-controller', {}, h('main.shell-main')));
+      document.title = 'Prompter · Lemonly Prompter';
+      unmount = mountController(appEl.querySelector('.shell-main'), ctx);
       break;
     case 'library':
       mountInShell('Library', 'library', (main) => mountLibrary(main, ctx, { folderId: param || null }));

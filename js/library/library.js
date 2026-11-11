@@ -4,7 +4,8 @@ import * as store from './store.js';
 import { pickFolder, breadcrumbEls } from './picker.js';
 import { sortScripts, byName } from './sort.js';
 import { htmlToText } from '../editor/sanitize.js';
-import { getPref, setPref, isDesktop } from '../device.js';
+import { getPref, setPref, isDesktop, setRole } from '../device.js';
+import { icon } from '../icons.js';
 
 export function mountLibrary(root, ctx, { folderId: initialFolder = null, trash = false } = {}) {
   let folderId = initialFolder;
@@ -33,13 +34,13 @@ export function mountLibrary(root, ctx, { folderId: initialFolder = null, trash 
             h('button.btn', { onclick: newFolder }, '+ Folder'),
             h('button.btn.primary', { onclick: newScript }, '+ Script'),
           ],
-        isDesktop() && !trash ? h('button.btn.accent', { onclick: () => ctx.switchRole('controller') }, 'Control the prompter') : null,
+        isDesktop() && !trash ? h('button.btn.accent', { onclick: () => { setRole('controller'); ctx.go('#/controller'); } }, 'Control the prompter') : null,
       )),
     trash ? h('p.muted', {}, 'Items in the trash are deleted forever after 30 days.') : h('div.lib-tools', {},
       search,
       h('label.check', {}, searchTextBox, h('span', {}, 'Search script text too')),
       sortSel,
-      h('button.btn.ghost.trash-link', { onclick: () => ctx.go('#/trash') }, '🗑 Trash')),
+      h('button.btn.ghost.trash-link', { onclick: () => ctx.go('#/trash'), html: `${icon('trash-2', 18)}<span>Trash</span>` })),
     trash ? null : crumbs,
   );
   const el = h('div.library', {}, head, list);
@@ -144,7 +145,7 @@ export function mountLibrary(root, ctx, { folderId: initialFolder = null, trash 
 
   // ── Rows ──────────────────────────────────────────────────────────────────
   function menuButton(items) {
-    const btn = h('button.btn.icon.menu-btn', { 'aria-label': 'More actions', 'aria-haspopup': 'menu' }, '⋯');
+    const btn = h('button.btn.icon.menu-btn', { 'aria-label': 'More actions', 'aria-haspopup': 'menu', html: icon('ellipsis') });
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       openMenu(btn, items);
@@ -156,7 +157,7 @@ export function mountLibrary(root, ctx, { folderId: initialFolder = null, trash 
     const item = { kind: 'folder', ...f };
     const path = showPath && f.parentId ? store.folderPath(f.parentId).map((x) => x.name).join(' / ') : '';
     const row = h('div.lib-row.folder', { role: 'button', tabindex: 0 },
-      h('span.ico', {}, '📁'),
+      h('span.ico', { html: icon('folder', 20) }),
       h('div.row-main', {}, h('div.row-title', {}, f.name || 'Untitled folder'), path ? h('div.row-meta', {}, path) : null),
       menuButton([
         ['Rename', () => rename(item)],
@@ -176,17 +177,21 @@ export function mountLibrary(root, ctx, { folderId: initialFolder = null, trash 
     const edited = toMs(s.updatedAt);
     const by = s.updatedBy?.name ? ` by ${s.updatedBy.name.split(' ')[0]}` : '';
     const row = h('div.lib-row.script', { role: 'button', tabindex: 0 },
-      h('span.ico', {}, '📄'),
+      h('span.ico', { html: icon('file-text', 20) }),
       h('div.row-main', {},
         h('div.row-title', {}, s.title || 'Untitled script'),
         h('div.row-meta', {}, [path, edited ? `Edited ${timeAgo(edited)}${by}` : ''].filter(Boolean).join(' · '))),
       h('button.btn.small.load', {
+        'aria-label': `Load “${s.title || 'Untitled'}” on the prompter`,
+        title: 'Load on prompter',
         onclick: (e) => {
           e.stopPropagation();
           store.loadOnPrompter(s.id);
-          toast(`Loaded “${s.title || 'Untitled'}” on the prompter`);
+          setRole('controller');
+          ctx.go('#/controller'); // straight to the controls
         },
-      }, 'Load on prompter'),
+        html: `${icon('play', 16)}<span class="load-text">Load on prompter</span>`,
+      }),
       menuButton([
         ['Edit', () => ctx.go(`#/edit/${s.id}`)],
         ['Rename', () => rename(item)],
@@ -203,7 +208,7 @@ export function mountLibrary(root, ctx, { folderId: initialFolder = null, trash 
   function trashRow(item) {
     const name = item.kind === 'folder' ? item.name : item.title;
     return h('div.lib-row.trash', {},
-      h('span.ico', {}, item.kind === 'folder' ? '📁' : '📄'),
+      h('span.ico', { html: icon(item.kind === 'folder' ? 'folder' : 'file-text', 20) }),
       h('div.row-main', {},
         h('div.row-title', {}, name || 'Untitled'),
         h('div.row-meta', {}, `Deleted ${timeAgo(toMs(item.deletedAt))}`)),

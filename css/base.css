@@ -81,6 +81,7 @@ a { color: var(--teal); }
 .muted { color: var(--muted); }
 .small { font-size: 0.85rem; }
 .hidden { display: none !important; }
+.icon { display: block; flex: none; }
 button, input, select, textarea { font: inherit; color: inherit; }
 
 /* ── Buttons and inputs ──────────────────────────────────────────────────── */

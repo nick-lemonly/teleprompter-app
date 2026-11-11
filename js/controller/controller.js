@@ -12,8 +12,7 @@ import { watchScript } from '../script-doc.js';
 import { attachShortcuts } from '../shortcuts.js';
 import * as cmd from '../rig/commands.js';
 import { FALLBACK_VIEWPORT, RANGES, REF_LINE_FRACTION, SYNC, DEFAULT_SPEED_LPM } from '../config.js';
-import { pickScript } from '../library/picker.js';
-import { loadOnPrompter } from '../library/store.js';
+import { icon } from '../icons.js';
 import { mountEditor } from '../editor/editor.js';
 
 const pbKey = (pb) => (pb ? `${pb.seq}|${pb.by}|${pb.anchorTime}` : '');
@@ -21,13 +20,18 @@ const layoutKey = (s, vp) => `${s.fontSizePx}|${s.lineHeight}|${vp.w}|${vp.h}`;
 
 export function mountController(root, ctx) {
   // ── DOM ───────────────────────────────────────────────────────────────────
-  const titleBtn = h('button.script-title', { title: 'Switch script', onclick: () => chooseScript() },
-    h('span.script-title-text', {}, 'No script loaded'), h('span.chev', {}, '▾'));
+  const ibtn = (name, label, onclick, cls = '') =>
+    h('button.ibtn' + cls, { 'aria-label': label, title: label, onclick, html: icon(name) });
+  const titleEl = h('div.script-title', {}, 'No script loaded');
+  const moreBtn = ibtn('ellipsis', 'More controls', (e) => { e.stopPropagation(); toggleMore(); }, '.more-btn');
   const statusLight = h('span.status-light');
   const statusText = h('span.status-text', {}, 'Connecting…');
   const devicesEl = h('div.devices');
   const top = h('div.ctl-top', {},
-    titleBtn,
+    h('div.ctl-titlebar', {},
+      ibtn('arrow-left', 'Back to scripts', () => ctx.go('#/library'), '.back-btn'),
+      titleEl,
+      moreBtn),
     h('div.ctl-status', {}, h('div.status-pill', { role: 'status' }, statusLight, statusText), devicesEl),
   );
 
@@ -39,17 +43,24 @@ export function mountController(root, ctx) {
   const badge = h('div.mirror-badge.hidden');
   const emptyMsg = h('div.mirror-empty', {},
     h('p', {}, 'No script loaded'),
-    h('button.btn.primary', { onclick: () => chooseScript() }, 'Choose a script'));
+    h('button.btn.primary', { onclick: () => ctx.go('#/library') }, 'Choose a script'));
   mirror.append(stageHost, frameEl, caret, badge, emptyMsg);
-  const editorHost = h('div.ctl-editor.hidden');
+  const editorMount = h('div.ctl-editor-mount');
+  const editorHost = h('div.ctl-editor.hidden', {},
+    h('div.edit-bar', {},
+      h('span', { html: icon('lock-open', 18) }),
+      h('span.edit-bar-text', {}, 'Editing the script. Changes go live on the display.'),
+      h('button.btn.small.primary', { onclick: () => setLocked(true) }, 'Done')),
+    editorMount);
   const viewArea = h('div.ctl-view', {}, mirror, editorHost);
 
-  const btn = (cls, label, title, onclick) =>
-    h('button.tbtn' + cls, { 'aria-label': title, title, onclick }, label);
-  const topBtn = btn('', '⏮ Top', 'To top (Home)', () => cmd.toTop());
-  const backBtn = btn('', '◀ Back', 'Back a paragraph (←)', () => cmd.back());
-  const playBtn = btn('.play', '▶', 'Play / pause (Space)', () => cmd.togglePlay());
-  const fwdBtn = btn('', 'Fwd ▶', 'Forward a paragraph (→)', () => cmd.forward());
+  const tbtn = (cls, iconName, text, title, onclick) =>
+    h('button.tbtn' + cls, { 'aria-label': title, title, onclick },
+      iconName ? h('span.tbtn-ico', { html: icon(iconName, 20) }) : null, text ? h('span', {}, text) : null);
+  const topBtn = tbtn('', 'skip-back', 'Top', 'To top (Home)', () => cmd.toTop());
+  const backBtn = tbtn('', 'chevron-left', 'Back', 'Back a paragraph (←)', () => cmd.back());
+  const playBtn = h('button.tbtn.play', { 'aria-label': 'Play', title: 'Play / pause (Space)', onclick: () => cmd.togglePlay() });
+  const fwdBtn = tbtn('.fwd', 'chevron-right', 'Next', 'Forward a paragraph (→)', () => cmd.forward());
   const transport = h('div.transport', {}, topBtn, backBtn, playBtn, fwdBtn);
 
   const speed = h('input.speed-range', {
@@ -58,9 +69,13 @@ export function mountController(root, ctx) {
   });
   const speedVal = h('div.speed-val', {}, `${DEFAULT_SPEED_LPM} lines/min`);
   const speedRow = h('div.speed', {},
-    h('div.speed-row', {}, h('span.speed-icon', { 'aria-hidden': 'true' }, '🐢'), speed, h('span.speed-icon', { 'aria-hidden': 'true' }, '🐇')),
+    h('div.speed-row', {},
+      h('span.speed-icon', { title: 'Slower', html: icon('turtle', 24) }),
+      speed,
+      h('span.speed-icon', { title: 'Faster', html: icon('rabbit', 24) })),
     speedVal);
 
+  // Advanced controls: in the ••• panel on phones, inline beside the mirror on wide screens.
   const sizeVal = h('span.stepper-val');
   const lhVal = h('span.stepper-val');
   const stepper = (label, valEl, onMinus, onPlus, names) =>
@@ -78,17 +93,48 @@ export function mountController(root, ctx) {
   const flipH = h('input', { type: 'checkbox', role: 'switch' });
   flipV.addEventListener('change', () => cmd.toggleFlipV());
   flipH.addEventListener('change', () => cmd.toggleFlipH());
-  const lockBtn = h('button.btn.lock-btn', { onclick: () => toggleLock() });
-  const toggles = h('div.toggles-wrap', {},
-    h('span.stepper-label', {}, 'Flip display'),
-    h('div.toggles', {},
-      h('label.switch-row', {}, flipV, h('span.switch'), h('span', {}, 'Upside-down')),
-      h('label.switch-row', {}, flipH, h('span.switch'), h('span', {}, 'Left-right')),
-      lockBtn));
+  const lockBtn = h('button.btn.lock-btn', { onclick: () => { closeMore(); toggleLock(); } });
+  const advanced = h('div.advanced', {},
+    textControls,
+    h('div.toggles-wrap', {},
+      h('span.stepper-label', {}, 'Flip display'),
+      h('div.toggles', {},
+        h('label.switch-row', {}, flipV, h('span.switch'), h('span', {}, 'Upside-down')),
+        h('label.switch-row', {}, flipH, h('span.switch'), h('span', {}, 'Left-right')))),
+    lockBtn);
+  const morePanel = h('div.more-panel.hidden', { role: 'dialog', 'aria-label': 'More controls' });
 
-  const controls = h('div.ctl-controls', {}, transport, speedRow, textControls, toggles);
-  const el = h('div.controller', {}, top, h('div.ctl-main', {}, viewArea, controls));
+  const controls = h('div.ctl-controls', {}, transport, speedRow);
+  const el = h('div.controller', {}, top, morePanel, h('div.ctl-main', {}, viewArea, controls));
   root.replaceChildren(el);
+
+  const wide = window.matchMedia('(min-width: 900px)');
+  function placeAdvanced() {
+    if (wide.matches) {
+      closeMore();
+      controls.append(advanced);
+    } else {
+      morePanel.append(advanced);
+    }
+    moreBtn.classList.toggle('hidden', wide.matches);
+  }
+  function toggleMore() {
+    if (morePanel.classList.contains('hidden')) {
+      morePanel.classList.remove('hidden');
+      moreBtn.classList.add('active');
+      setTimeout(() => document.addEventListener('pointerdown', onOutside, true), 0);
+    } else closeMore();
+  }
+  function closeMore() {
+    morePanel.classList.add('hidden');
+    moreBtn.classList.remove('active');
+    document.removeEventListener('pointerdown', onOutside, true);
+  }
+  function onOutside(e) {
+    if (!morePanel.contains(e.target) && !moreBtn.contains(e.target)) closeMore();
+  }
+  wide.addEventListener('change', placeAdvanced);
+  placeAdvanced();
 
   // ── State ─────────────────────────────────────────────────────────────────
   let stopped = false;
@@ -151,7 +197,7 @@ export function mountController(root, ctx) {
     const repKey = rep ? `${rep.at}|${rep.seq}` : '';
     if (rep && repKey !== lastReportKey && dl && rep.layoutHash === dl.hash && rep.seq === (pb.seq || 0)) {
       lastReportKey = repKey;
-      const expected = computePos(pb, settings, rep.at, dl.maxPos);
+      const expected = computePos(pb, settings, rep.at, dl.maxPos, dl.minPos);
       lastDelta = rep.pos - expected;
       targetCorrection = Math.abs(lastDelta) <= linePx(settings) ? lastDelta : 0;
     }
@@ -171,14 +217,14 @@ export function mountController(root, ctx) {
     hold = null;
     correction = targetCorrection = lastDelta = 0;
     parts.content.innerHTML = '';
-    titleBtn.querySelector('.script-title-text').textContent = id ? 'Loading…' : 'No script loaded';
+    titleEl.textContent = id ? 'Loading…' : 'No script loaded';
     emptyMsg.classList.toggle('hidden', !!id);
     if (!locked) setLocked(true);
     if (!id) return;
     unsubScript = watchScript(id, (data) => {
       if (stopped || scriptId !== id) return;
       scriptData = data && !data.deletedAt ? data : null;
-      titleBtn.querySelector('.script-title-text').textContent = scriptData ? scriptData.title || 'Untitled' : 'Script not found';
+      titleEl.textContent = scriptData ? scriptData.title || 'Untitled' : 'Script not found';
       relayoutLocal(settings);
     });
   }
@@ -197,7 +243,7 @@ export function mountController(root, ctx) {
       renderContent(parts, scriptData.content);
       renderedHtml = scriptData.content;
     }
-    const m = measureLayout(parts.content, settings);
+    const m = measureLayout(parts.content, settings, vp.h);
     const next = {
       ...m,
       scriptId: scriptData.id,
@@ -211,11 +257,11 @@ export function mountController(root, ctx) {
     if (old && old.scriptId === next.scriptId && old.hash !== next.hash && dragPos == null) {
       const now = serverNow();
       const oldDl = getRig().layout?.hash === old.hash ? getRig().layout : null;
-      const oldDisp = computePos(pb, oldSettings || settings, now, oldDl ? oldDl.maxPos : old.maxPos);
+      const oldDisp = computePos(pb, oldSettings || settings, now, oldDl ? oldDl.maxPos : old.maxPos, oldDl ? oldDl.minPos : old.minPos);
       const oldLocal = oldDl ? mapPos(oldDisp, oldDl, old) : oldDisp;
       hold = {
         baseKey: pbKey(pb),
-        localPos: clamp(remapAcrossLayouts(oldLocal, old, next), 0, next.maxPos),
+        localPos: clamp(remapAcrossLayouts(oldLocal, old, next), next.minPos, next.maxPos),
         at: now,
         playing: pb.state === 'playing',
         speed: pb.speedLpm,
@@ -266,11 +312,12 @@ export function mountController(root, ctx) {
       localPos = dragPos;
     } else if (hold) {
       localPos = hold.localPos + (hold.playing ? (pxPerSecond(settings, hold.speed) * (now - hold.at)) / 1000 : 0);
-      localPos = clamp(localPos, 0, localLayout.maxPos);
+      localPos = clamp(localPos, localLayout.minPos, localLayout.maxPos);
     } else {
       const maxDisp = dl ? dl.maxPos : localLayout.maxPos;
-      dispPos = computePos(pb, settings, now, maxDisp);
-      if (pb.state === 'playing') dispPos = clamp(dispPos + correction, 0, maxDisp);
+      const minDisp = dl ? dl.minPos : localLayout.minPos;
+      dispPos = computePos(pb, settings, now, maxDisp, minDisp);
+      if (pb.state === 'playing') dispPos = clamp(dispPos + correction, minDisp, maxDisp);
       localPos = toLocal(dispPos, dl);
     }
     lastLocalPos = localPos;
@@ -304,7 +351,7 @@ export function mountController(root, ctx) {
       drag.startY = e.clientY;
       return;
     }
-    dragPos = clamp(drag.startLocal - dy / geo.scale, 0, localLayout.maxPos);
+    dragPos = clamp(drag.startLocal - dy / geo.scale, localLayout.minPos, localLayout.maxPos);
     scrubWrite(toDisplay(dragPos));
   });
   const endDrag = (e) => {
@@ -341,7 +388,7 @@ export function mountController(root, ctx) {
     hold = null;
     const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? mirror.clientHeight : 1;
     const base = dragPos ?? lastLocalPos;
-    dragPos = clamp(base + (e.deltaY * unit) / geo.scale, 0, localLayout.maxPos);
+    dragPos = clamp(base + (e.deltaY * unit) / geo.scale, localLayout.minPos, localLayout.maxPos);
     scrubWrite(toDisplay(dragPos));
     clearTimeout(wheelTimer);
     wheelTimer = setTimeout(() => {
@@ -367,7 +414,10 @@ export function mountController(root, ctx) {
 
   function updateControls() {
     const playing = pb.state === 'playing';
-    playBtn.textContent = playing ? '❚❚' : '▶';
+    if (playBtn.dataset.state !== (playing ? 'pause' : 'play')) {
+      playBtn.dataset.state = playing ? 'pause' : 'play';
+      playBtn.innerHTML = icon(playing ? 'pause' : 'play', 34);
+    }
     playBtn.classList.toggle('playing', playing);
     playBtn.setAttribute('aria-label', playing ? 'Pause' : 'Play');
     for (const b of [topBtn, backBtn, fwdBtn]) b.disabled = playing || !scriptId;
@@ -382,8 +432,9 @@ export function mountController(root, ctx) {
     flipH.checked = !!settings.flipH;
     badge.textContent = 'End of script';
     badge.classList.toggle('hidden', pb.state !== 'ended');
-    lockBtn.textContent = locked ? '🔒 Edit locked' : '🔓 Editing';
+    lockBtn.innerHTML = `${icon(locked ? 'lock' : 'lock-open', 18)}<span>${locked ? 'Edit script' : 'Done editing'}</span>`;
     lockBtn.classList.toggle('active', !locked);
+    lockBtn.disabled = !scriptId;
   }
 
   function updateDevices(rig, presence) {
@@ -421,12 +472,7 @@ export function mountController(root, ctx) {
   }
   const statusTimer = setInterval(updateStatus, 250);
 
-  // ── Script picker and edit lock ───────────────────────────────────────────
-  async function chooseScript() {
-    const id = await pickScript({ title: 'Load a script on the prompter' });
-    if (id) loadOnPrompter(id);
-  }
-
+  // ── Edit lock ─────────────────────────────────────────────────────────────
   function toggleLock() {
     if (locked && !scriptId) return toast('Load a script first');
     setLocked(!locked);
@@ -438,7 +484,7 @@ export function mountController(root, ctx) {
     editorCleanup = null;
     mirror.classList.toggle('hidden', !locked);
     editorHost.classList.toggle('hidden', locked);
-    if (!locked) editorCleanup = mountEditor(editorHost, scriptId, { compact: true });
+    if (!locked) editorCleanup = mountEditor(editorMount, scriptId, { compact: true });
     else requestAnimationFrame(() => relayoutLocal(settings));
     updateControls();
   }
@@ -459,5 +505,7 @@ export function mountController(root, ctx) {
     editorCleanup?.();
     detachKeys();
     cmd.setLocalLayoutProvider(null);
+    wide.removeEventListener('change', placeAdvanced);
+    closeMore();
   };
 }

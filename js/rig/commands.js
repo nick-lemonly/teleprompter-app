@@ -33,8 +33,13 @@ function maxPos() {
   return typeof m === 'number' ? m : Infinity;
 }
 
+function minPos() {
+  const m = currentLayout()?.minPos;
+  return typeof m === 'number' ? m : 0;
+}
+
 export function nowPos() {
-  return computePos(currentPlayback(), currentSettings(), serverNow(), maxPos());
+  return computePos(currentPlayback(), currentSettings(), serverNow(), maxPos(), minPos());
 }
 
 export function isPlaying() {
@@ -47,7 +52,7 @@ function writePlayback(changes, kind, extra = {}) {
   const pb = {
     state: old.state || 'paused',
     speedLpm: old.speedLpm || DEFAULT_SPEED_LPM,
-    anchorPos: computePos(old, currentSettings(), now, maxPos()),
+    anchorPos: computePos(old, currentSettings(), now, maxPos(), minPos()),
     ...changes,
     anchorTime: now,
     seq: (old.seq || 0) + 1,
@@ -92,7 +97,7 @@ export function bumpSpeed(delta) {
 export function seekTo(pos, kind = 'seek') {
   const old = currentPlayback();
   const state = old.state === 'ended' ? 'paused' : old.state;
-  writePlayback({ state, anchorPos: clamp(pos, 0, maxPos()) }, kind);
+  writePlayback({ state, anchorPos: clamp(pos, minPos(), maxPos()) }, kind);
 }
 
 // Navigation acts only between takes: never while playing.
@@ -121,6 +126,7 @@ export function forward() {
   const lp = linePx(currentSettings());
   const tops = layout?.blockTops || [];
   if (tops.length < 2) return seekTo(pos + 3 * lp, 'nudge');
+  if (pos < tops[0] - 1) return seekTo(tops[0], 'nudge'); // from the lead-in: to the first line
   const i = blockIndexAt(pos + 1, tops);
   seekTo(i + 1 < tops.length ? tops[i + 1] : layout.maxPos, 'nudge');
 }

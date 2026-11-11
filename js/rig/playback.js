@@ -28,19 +28,22 @@ export const EMPTY_PLAYBACK = Object.freeze({
   seq: 0,
 });
 
-/** Position (display px) at server time `now`. */
-export function computePos(playback, settings, now, maxPos = Infinity) {
+/**
+ * Position (display px) at server time `now`, clamped to [minPos, maxPos].
+ * minPos is negative: the lead-in above the first line (see layout.js).
+ */
+export function computePos(playback, settings, now, maxPos = Infinity, minPos = 0) {
   const pb = playback || EMPTY_PLAYBACK;
   let pos = Number(pb.anchorPos) || 0;
   if (pb.state === 'playing') {
     pos += (pxPerSecond(settings, pb.speedLpm) * (now - pb.anchorTime)) / 1000;
   }
-  return clamp(pos, 0, Math.max(0, maxPos));
+  return clamp(pos, Math.min(0, minPos), Math.max(0, maxPos));
 }
 
 /** Unclamped position, used to detect reaching the end. */
 export function rawPos(playback, settings, now) {
-  return computePos(playback, settings, now, Infinity);
+  return computePos(playback, settings, now, Infinity, -Infinity);
 }
 
 export function easeOutCubic(t) {

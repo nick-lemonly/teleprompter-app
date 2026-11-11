@@ -7,6 +7,7 @@ import { userStamp } from '../auth.js';
 import { deviceId } from '../device.js';
 import { AUTOSAVE_MS, QUILL_VERSION } from '../config.js';
 import { markOpened, loadOnPrompter } from '../library/store.js';
+import { icon } from '../icons.js';
 
 const QUILL_JS = `https://cdn.jsdelivr.net/npm/quill@${QUILL_VERSION}/dist/quill.js`;
 const QUILL_CSS = `https://cdn.jsdelivr.net/npm/quill@${QUILL_VERSION}/dist/quill.snow.css`;
@@ -103,8 +104,8 @@ export function mountEditor(container, scriptId, { compact = false, onBack } = {
         <button class="ql-indent" value="+1" aria-label="Indent"></button>
       </span>
       <span class="ql-formats">
-        <button class="ql-undo" aria-label="Undo" title="Undo">↶</button>
-        <button class="ql-redo" aria-label="Redo" title="Redo">↷</button>
+        <button class="ql-undo" aria-label="Undo" title="Undo">${icon('undo-2', 18)}</button>
+        <button class="ql-redo" aria-label="Redo" title="Redo">${icon('redo-2', 18)}</button>
       </span>`,
   });
   const body = h('div.editor-body');

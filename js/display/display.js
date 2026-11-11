@@ -141,7 +141,7 @@ export function mountDisplay(root, ctx) {
   function onNewPlayback(next) {
     const first = !lastPbKey;
     const lp = linePx(settings);
-    const target = computePos(next, settings, serverNow(), layout ? layout.maxPos : Infinity);
+    const target = computePos(next, settings, serverNow(), layout ? layout.maxPos : Infinity, layout ? layout.minPos : 0);
     const jump = target - renderedPos;
     if (first || !layout) ease = null;
     else if (next.kind === 'scrub') {
@@ -186,7 +186,7 @@ export function mountDisplay(root, ctx) {
       renderContent(parts, scriptData.content);
       renderedHtml = scriptData.content;
     }
-    const m = measureLayout(parts.content, settings);
+    const m = measureLayout(parts.content, settings, vh);
     const next = {
       ...m,
       scriptId: scriptData.id,
@@ -202,14 +202,14 @@ export function mountDisplay(root, ctx) {
     layout = next;
     const publish = {
       hash: next.hash, scriptId: next.scriptId, revision: next.revision, blockTops: next.blockTops,
-      totalHeight: next.totalHeight, maxPos: next.maxPos, viewportW: vw, viewportH: vh,
+      totalHeight: next.totalHeight, maxPos: next.maxPos, minPos: next.minPos, viewportW: vw, viewportH: vh,
     };
     const rateChanged = oldSettings && linePx(oldSettings) !== linePx(settings);
     if (old && old.scriptId === next.scriptId && (old.hash !== next.hash || rateChanged)) {
       const cur = pb || EMPTY_PLAYBACK;
       const now = serverNow();
-      const oldPos = computePos(cur, oldSettings || settings, now, old.maxPos);
-      const newPos = clamp(remapAcrossLayouts(oldPos, old, next), 0, next.maxPos);
+      const oldPos = computePos(cur, oldSettings || settings, now, old.maxPos, old.minPos);
+      const newPos = clamp(remapAcrossLayouts(oldPos, old, next), next.minPos, next.maxPos);
       const re = {
         ...cur,
         anchorPos: cur.state === 'ended' ? next.maxPos : newPos,
@@ -244,7 +244,7 @@ export function mountDisplay(root, ctx) {
       lastPbKey = pbKey(end);
       writeRig({ playback: end });
     }
-    const target = clamp(raw, 0, layout.maxPos);
+    const target = clamp(raw, layout.minPos, layout.maxPos);
     let off = 0;
     if (ease) {
       const k = (performance.now() - ease.start) / ease.dur;
@@ -377,7 +377,8 @@ export function mountDisplay(root, ctx) {
   }
 
   const onTap = (e) => {
-    if (overlay.isOpen() || notice.contains(e.target) || !claimed) return;
+    // Clicks inside the overlay (✕, backdrop) close it; don't let them bubble up and reopen it.
+    if (overlay.isOpen() || overlay.el.contains(e.target) || notice.contains(e.target) || !claimed) return;
     overlay.show();
   };
   el.addEventListener('click', onTap);
