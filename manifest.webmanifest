@@ -1,6 +1,6 @@
 {
-  "name": "Lemonly Prompter",
-  "short_name": "Prompter",
+  "name": "Lemonly Teleprompter",
+  "short_name": "Teleprompter",
   "description": "Teleprompter for Lemonly video shoots.",
   "start_url": "./",
   "scope": "./",

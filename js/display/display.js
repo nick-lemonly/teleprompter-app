@@ -202,7 +202,7 @@ export function mountDisplay(root, ctx) {
     const old = layout;
     layout = next;
     const publish = {
-      hash: next.hash, scriptId: next.scriptId, revision: next.revision, blockTops: next.blockTops,
+      hash: next.hash, scriptId: next.scriptId, revision: next.revision, blockTops: next.blockTops, navTops: next.navTops,
       totalHeight: next.totalHeight, maxPos: next.maxPos, minPos: next.minPos, viewportW: vw, viewportH: vh,
     };
     const rateChanged = oldSettings && linePx(oldSettings) !== linePx(settings);

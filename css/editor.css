@@ -5,7 +5,7 @@
   height: 100%;
   max-width: 980px;
   margin: 0 auto;
-  padding: 14px 16px calc(14px + var(--safe-bottom));
+  padding: 14px 16px calc(14px + var(--safe-bottom) + var(--edge-bottom));
   gap: 10px;
 }
 .editor.compact { padding: 0; max-width: none; }

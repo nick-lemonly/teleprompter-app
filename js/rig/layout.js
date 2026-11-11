@@ -44,7 +44,9 @@ export function measureLayout(contentEl, settings, viewportH) {
   const maxPos = Math.max(0, totalHeight - linePx(settings));
   const texts = blocks.map((b) => b.textContent.replace(/\s+/g, ' ').trim().slice(0, 160));
   const minPos = Math.round(leadInMinPos(viewportH || 0, settings));
-  return { blockTops, totalHeight, maxPos, minPos, texts };
+  // Stops for Back/Next: blocks with text. Blank spacer lines aren't paragraphs.
+  const navTops = blockTops.filter((_, i) => texts[i] !== '');
+  return { blockTops, navTops, totalHeight, maxPos, minPos, texts };
 }
 
 export function layoutHash({ scriptId, revision, fontSizePx, lineHeight, viewportW, viewportH }) {

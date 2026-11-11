@@ -4,7 +4,7 @@ import * as store from './store.js';
 import { pickFolder, breadcrumbEls } from './picker.js';
 import { sortScripts, byName } from './sort.js';
 import { htmlToText } from '../editor/sanitize.js';
-import { getPref, setPref, isDesktop, setRole } from '../device.js';
+import { getPref, setPref, setRole } from '../device.js';
 import { icon } from '../icons.js';
 
 export function mountLibrary(root, ctx, { folderId: initialFolder = null, trash = false } = {}) {
@@ -34,7 +34,7 @@ export function mountLibrary(root, ctx, { folderId: initialFolder = null, trash 
             h('button.btn', { onclick: newFolder }, '+ Folder'),
             h('button.btn.primary', { onclick: newScript }, '+ Script'),
           ],
-        isDesktop() && !trash ? h('button.btn.accent', { onclick: () => { setRole('controller'); ctx.go('#/controller'); } }, 'Control the prompter') : null,
+        !trash ? h('button.btn.accent', { onclick: () => { setRole('controller'); ctx.go('#/controller'); } }, 'Control the prompter') : null,
       )),
     trash ? h('p.muted', {}, 'Items in the trash are deleted forever after 30 days.') : h('div.lib-tools', {},
       search,

@@ -1,4 +1,4 @@
-.library { max-width: 980px; margin: 0 auto; padding: 18px 16px calc(32px + var(--safe-bottom)); }
+.library { max-width: 980px; margin: 0 auto; padding: 18px 16px calc(32px + var(--safe-bottom) + var(--edge-bottom)); }
 .lib-head { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
 .lib-title-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .lib-title-row h1 { margin: 0; text-transform: uppercase; letter-spacing: 0.05em; }

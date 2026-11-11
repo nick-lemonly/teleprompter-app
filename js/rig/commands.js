@@ -106,12 +106,17 @@ export function toTop() {
   seekTo(0, 'top');
 }
 
+/** Paragraph starts to navigate between (skips blank spacer lines). */
+function navStops(layout) {
+  return layout?.navTops?.length ? layout.navTops : layout?.blockTops || [];
+}
+
 export function back() {
   if (isPlaying()) return;
   const layout = currentLayout();
   const pos = nowPos();
   const lp = linePx(currentSettings());
-  const tops = layout?.blockTops || [];
+  const tops = navStops(layout);
   if (tops.length < 2) return seekTo(pos - 3 * lp, 'nudge');
   const i = blockIndexAt(pos + 1, tops);
   // Like "previous track": more than about a line into this block → its start.
@@ -124,7 +129,7 @@ export function forward() {
   const layout = currentLayout();
   const pos = nowPos();
   const lp = linePx(currentSettings());
-  const tops = layout?.blockTops || [];
+  const tops = navStops(layout);
   if (tops.length < 2) return seekTo(pos + 3 * lp, 'nudge');
   if (pos < tops[0] - 1) return seekTo(tops[0], 'nudge'); // from the lead-in: to the first line
   const i = blockIndexAt(pos + 1, tops);

@@ -54,7 +54,7 @@ function showSignIn(errorText = '') {
   setView(h('div.center-screen', {},
     h('div.signin', {},
       h('img.logo-lg', { src: 'assets/lemonly-logo.svg', alt: 'Lemonly' }),
-      h('h1', {}, 'Lemonly Prompter'),
+      h('h1', {}, 'Lemonly Teleprompter'),
       h('p.muted', {}, 'Sign in with your Lemonly or Click Rain Google account.'),
       btn,
       err)));
@@ -137,7 +137,7 @@ function route() {
       if (getRole() !== 'controller') setRole('controller');
       // Full-screen: the controller has its own back arrow instead of the app header.
       setView(h('div.shell.section-controller', {}, h('main.shell-main')));
-      document.title = 'Prompter · Lemonly Prompter';
+      document.title = 'Prompter · Lemonly Teleprompter';
       unmount = mountController(appEl.querySelector('.shell-main'), ctx);
       break;
     case 'library':
@@ -174,19 +174,25 @@ function mountInShell(title, section, mountFn) {
     h('a.nav-link' + (section === 'controller' ? '.active' : ''), { href: '#/controller' }, 'Prompter'));
   const accountBtn = h('button.account-btn', { 'aria-label': 'Account and settings', 'aria-haspopup': 'menu' },
     (user?.displayName || user?.email || '?').trim().charAt(0).toUpperCase());
+  // Google account photo, with the initial as the fallback if it's missing or fails to load.
+  if (user?.photoURL) {
+    const img = h('img.avatar', { src: user.photoURL, alt: '', referrerpolicy: 'no-referrer', draggable: 'false' });
+    img.addEventListener('error', () => img.remove());
+    accountBtn.append(img);
+  }
   accountBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     openAccountMenu(accountBtn);
   });
   const header = h('header.shell-header', {},
-    h('a.brand', { href: '#/', 'aria-label': 'Lemonly Prompter home' },
+    h('a.brand', { href: '#/', 'aria-label': 'Lemonly Teleprompter home' },
       h('img.logo', { src: 'assets/lemonly-logo.svg', alt: '' }),
       h('span.brand-title', {}, title)),
     nav,
     DEMO_ENABLED ? h('span.demo-badge', {}, 'DEMO') : null,
     accountBtn);
   setView(h('div.shell.section-' + section, {}, header, main));
-  document.title = `${title} · Lemonly Prompter`;
+  document.title = `${title} · Lemonly Teleprompter`;
   unmount = mountFn(main);
 }
 
@@ -203,7 +209,7 @@ function mountRolePicker() {
           h('span.role-ico', { html: icon('smartphone', 40) }), h('strong', {}, 'Controller'), h('span.muted', {}, 'Drive the prompter from here'))),
       h('p.muted.small', {}, 'You can change this later in the account menu.'),
       h('button.btn.ghost', { onclick: () => ctx.signOut() }, 'Sign out'))));
-  document.title = 'Lemonly Prompter';
+  document.title = 'Lemonly Teleprompter';
 }
 
 let menuEl = null;

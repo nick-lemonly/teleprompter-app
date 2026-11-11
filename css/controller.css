@@ -6,7 +6,7 @@
   height: 100%;
   /* Clear the iPhone status bar / Dynamic Island on top and the home indicator at the
      bottom, so the speed slider never sits at the very edge of the screen. */
-  padding: calc(6px + var(--safe-top)) 12px max(20px, calc(10px + var(--safe-bottom)));
+  padding: calc(6px + var(--safe-top) + var(--edge-top)) 12px max(20px, calc(10px + var(--safe-bottom) + var(--edge-bottom)));
   gap: 8px;
 }
 
@@ -268,7 +268,7 @@
 /* Phones held sideways: mirror on the left, controls in a scrolling column on the right. */
 @media (max-height: 560px) and (orientation: landscape) and (max-width: 899px) {
   .controller {
-    padding: calc(4px + var(--safe-top)) max(12px, env(safe-area-inset-right)) max(10px, var(--safe-bottom)) max(12px, env(safe-area-inset-left));
+    padding: calc(4px + var(--safe-top) + var(--edge-top) / 2) max(12px, env(safe-area-inset-right)) max(12px, calc(var(--safe-bottom) + var(--edge-bottom) / 2)) max(12px, env(safe-area-inset-left));
     gap: 4px;
   }
   .ctl-top { flex-direction: row; align-items: center; gap: 12px; }
