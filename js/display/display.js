@@ -351,8 +351,10 @@ export function mountDisplay(root, ctx) {
       wrap.classList.remove('hidden');
       bump();
     };
+    let closedAt = 0;
     const hide = () => {
       clearTimeout(timer);
+      closedAt = performance.now();
       wrap.classList.add('hidden');
       nameInput.blur();
     };
@@ -371,15 +373,23 @@ export function mountDisplay(root, ctx) {
     });
     wrap.addEventListener('pointerdown', bump);
     wrap.addEventListener('input', bump);
-    wrap.addEventListener('pointerdown', (e) => {
+    // Tap outside the panel closes it. Close on click, not pointerdown: hiding on
+    // pointerdown sends the rest of the tap to the screen behind, which reopens it.
+    wrap.addEventListener('click', (e) => {
       if (e.target === wrap) hide();
     });
-    return { el: wrap, show, hide, isOpen: () => !wrap.classList.contains('hidden') };
+    return {
+      el: wrap,
+      show,
+      hide,
+      isOpen: () => !wrap.classList.contains('hidden'),
+      justClosed: () => performance.now() - closedAt < 400,
+    };
   }
 
   const onTap = (e) => {
     // Clicks inside the overlay (✕, backdrop) close it; don't let them bubble up and reopen it.
-    if (overlay.isOpen() || overlay.el.contains(e.target) || notice.contains(e.target) || !claimed) return;
+    if (overlay.isOpen() || overlay.justClosed() || overlay.el.contains(e.target) || notice.contains(e.target) || !claimed) return;
     overlay.show();
   };
   el.addEventListener('click', onTap);
